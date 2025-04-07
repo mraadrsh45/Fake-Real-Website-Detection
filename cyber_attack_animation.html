@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Attack Visualization</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+         :root {
+            --primary-color: #00ff9d;
+            --secondary-color: #00b8ff;
+            --dark-bg: #0a1929;
+            --darker-bg: #071521;
+            --text-color: #e6f1ff;
+            --alert-color: #ff4444;
+            --success-color: #00ff9d;
+        }
+        
+        body {
+            background: var(--dark-bg);
+            color: var(--text-color);
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(10, 25, 41, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .header h1 {
+            color: var(--primary-color);
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+        }
+        
+        .animation-container {
+            background: rgba(10, 25, 41, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--primary-color);
+            height: 500px;
+        }
+        
+        .matrix-rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.1;
+        }
+        
+        .system-interface {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .attack-side,
+        .defense-side {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid var(--alert-color);
+        }
+        
+        .defense-side {
+            border-color: var(--success-color);
+        }
+        
+        .terminal {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            padding: 10px;
+            height: 100px;
+            overflow-y: auto;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+        }
+        
+        .attack-line {
+            position: absolute;
+            height: 2px;
+            background: var(--alert-color);
+            width: 0;
+            transform-origin: left;
+            animation: attack 2s infinite;
+            top: 50%;
+            left: 0;
+        }
+        
+        .defense-shield {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--success-color);
+            border-radius: 50%;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            animation: shield 2s infinite;
+        }
+        
+        .explanation {
+            background: rgba(10, 25, 41, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .explanation h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--primary-color);
+            color: var(--dark-bg);
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 255, 157, 0.3);
+            color: var(--dark-bg);
+        }
+        
+        @keyframes attack {
+            0% {
+                width: 0;
+                transform: translateX(0);
+            }
+            50% {
+                width: 50%;
+                transform: translateX(25%);
+            }
+            100% {
+                width: 0;
+                transform: translateX(50%);
+            }
+        }
+        
+        @keyframes shield {
+            0% {
+                transform: translateY(-50%) scale(1);
+                box-shadow: 0 0 10px var(--success-color);
+            }
+            50% {
+                transform: translateY(-50%) scale(1.1);
+                box-shadow: 0 0 20px var(--success-color);
+            }
+            100% {
+                transform: translateY(-50%) scale(1);
+                box-shadow: 0 0 10px var(--success-color);
+            }
+        }
+        
+        .matrix-char {
+            position: absolute;
+            color: var(--primary-color);
+            animation: fall linear infinite;
+        }
+        
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status-attack {
+            background: var(--alert-color);
+            animation: pulse 1s infinite;
+        }
+        
+        .status-defense {
+            background: var(--success-color);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        
+        .file-scanner {
+            position: relative;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid var(--secondary-color);
+        }
+        
+        .file-upload {
+            border: 2px dashed var(--secondary-color);
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload:hover {
+            background: rgba(0, 184, 255, 0.1);
+        }
+        
+        .scanning-animation {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .scanning-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 184, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .scanning-progress {
+            width: 0%;
+            height: 100%;
+            background: var(--secondary-color);
+            animation: scanning 2s infinite;
+        }
+        
+        .scan-results {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+        }
+        
+        .file-info {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+        
+        .threat-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .threat-safe {
+            background: var(--success-color);
+            animation: pulse 1s infinite;
+        }
+        
+        .threat-warning {
+            background: #ffcc00;
+            animation: pulse 1s infinite;
+        }
+        
+        .threat-danger {
+            background: var(--alert-color);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes scanning {
+            0% {
+                width: 0%;
+                transform: translateX(0);
+            }
+            50% {
+                width: 100%;
+                transform: translateX(0);
+            }
+            100% {
+                width: 0%;
+                transform: translateX(100%);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cyber Attack Visualization</h1>
+            <p>Real-time demonstration of cyber attacks and defense mechanisms</p>
+        </div>
+
+        <div class="animation-container">
+            <div class="matrix-rain" id="matrixRain"></div>
+            <div class="system-interface">
+                <div class="attack-side">
+                    <h4><span class="status-indicator status-attack"></span>Attack System</h4>
+                    <div class="terminal" id="attackTerminal"></div>
+                </div>
+                <div class="defense-side">
+                    <h4><span class="status-indicator status-defense"></span>Defense System</h4>
+                    <div class="terminal" id="defenseTerminal"></div>
+                </div>
+            </div>
+            <div class="attack-line"></div>
+            <div class="defense-shield"></div>
+        </div>
+
+        <div class="explanation">
+            <h3>Attack Methods Shown</h3>
+            <ul>
+                <li>Brute Force Attack: Attempting multiple password combinations</li>
+                <li>SQL Injection: Trying to exploit database vulnerabilities</li>
+                <li>DDoS Attack: Overwhelming the system with traffic</li>
+                <li>Malware Injection: Attempting to deploy malicious code</li>
+                <li>Phishing Attempt: Trying to steal credentials</li>
+            </ul>
+        </div>
+
+        <div class="explanation">
+            <h3>Defense Mechanisms</h3>
+            <ul>
+                <li>Firewall Protection: Blocking unauthorized access</li>
+                <li>Intrusion Detection: Monitoring for suspicious activity</li>
+                <li>Encryption: Securing data transmission</li>
+                <li>Rate Limiting: Preventing DDoS attacks</li>
+                <li>Anti-Malware: Detecting and removing malicious code</li>
+            </ul>
+        </div>
+
+        <div class="explanation">
+            <h3>How to Protect Your System</h3>
+            <ul>
+                <li>Keep all software and systems updated</li>
+                <li>Use strong, unique passwords and enable 2FA</li>
+                <li>Install and maintain security software</li>
+                <li>Regularly backup important data</li>
+                <li>Be cautious of suspicious emails and links</li>
+                <li>Use a VPN for secure connections</li>
+                <li>Monitor system logs for unusual activity</li>
+            </ul>
+        </div>
+
+        <div class="file-scanner">
+            <h4><span class="status-indicator status-defense"></span>File Scanner</h4>
+            <div class="file-upload" id="fileUpload">
+                <p>Drag & drop files here or click to select</p>
+                <small>Supported formats: .exe, .dll, .pdf, .doc, .zip</small>
+            </div>
+            <div class="scanning-animation" id="scanningAnimation">
+                <p>Scanning file for threats...</p>
+                <div class="scanning-bar">
+                    <div class="scanning-progress"></div>
+                </div>
+            </div>
+            <div class="scan-results" id="scanResults">
+                <div class="file-info">
+                    <h5>File Analysis Results</h5>
+                    <p><span class="threat-indicator threat-safe"></span>File Name: <span id="fileName">-</span></p>
+                    <p><span class="threat-indicator threat-safe"></span>File Type: <span id="fileType">-</span></p>
+                    <p><span class="threat-indicator threat-safe"></span>File Size: <span id="fileSize">-</span></p>
+                    <p><span class="threat-indicator threat-safe"></span>Threat Level: <span id="threatLevel">-</span></p>
+                    <p><span class="threat-indicator threat-safe"></span>Scan Status: <span id="scanStatus">-</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="index.html" class="back-button">Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        // Matrix rain effect
+        function createMatrixRain() {
+            const container = document.getElementById('matrixRain');
+            const chars = '01';
+            const columns = Math.floor(window.innerWidth / 20);
+
+            for (let i = 0; i < columns; i++) {
+                const char = document.createElement('div');
+                char.className = 'matrix-char';
+                char.textContent = chars[Math.floor(Math.random() * chars.length)];
+                char.style.left = `${i * 20}px`;
+                char.style.animationDuration = `${Math.random() * 2 + 1}s`;
+                container.appendChild(char);
+            }
+        }
+
+        // Attack and defense terminal messages
+        const attackMessages = [
+            '[*] Initiating brute force attack...',
+            '[*] Scanning for vulnerabilities...',
+            '[*] Attempting SQL injection...',
+            '[*] Deploying malware payload...',
+            '[*] Launching DDoS attack...',
+            '[*] Phishing attempt in progress...'
+        ];
+
+        const defenseMessages = [
+            '[+] Firewall blocking unauthorized access',
+            '[+] Intrusion detection system active',
+            '[+] Encrypting data transmission',
+            '[+] Rate limiting enabled',
+            '[+] Anti-malware scan running',
+            '[+] Security protocols updated'
+        ];
+
+        function updateTerminals() {
+            const attackTerminal = document.getElementById('attackTerminal');
+            const defenseTerminal = document.getElementById('defenseTerminal');
+
+            attackTerminal.innerHTML += attackMessages[Math.floor(Math.random() * attackMessages.length)] + '<br>';
+            defenseTerminal.innerHTML += defenseMessages[Math.floor(Math.random() * defenseMessages.length)] + '<br>';
+
+            attackTerminal.scrollTop = attackTerminal.scrollHeight;
+            defenseTerminal.scrollTop = defenseTerminal.scrollHeight;
+        }
+
+        // File scanner functionality
+        const fileUpload = document.getElementById('fileUpload');
+        const scanningAnimation = document.getElementById('scanningAnimation');
+        const scanResults = document.getElementById('scanResults');
+        const fileName = document.getElementById('fileName');
+        const fileType = document.getElementById('fileType');
+        const fileSize = document.getElementById('fileSize');
+        const threatLevel = document.getElementById('threatLevel');
+        const scanStatus = document.getElementById('scanStatus');
+
+        const sampleFiles = [{
+            name: 'document.pdf',
+            type: 'PDF',
+            size: '2.5 MB',
+            threat: 'safe'
+        }, {
+            name: 'setup.exe',
+            type: 'Executable',
+            size: '15.8 MB',
+            threat: 'warning'
+        }, {
+            name: 'malware.dll',
+            type: 'Dynamic Link Library',
+            size: '1.2 MB',
+            threat: 'danger'
+        }];
+
+        fileUpload.addEventListener('click', () => {
+            simulateFileScan();
+        });
+
+        function simulateFileScan() {
+            const file = sampleFiles[Math.floor(Math.random() * sampleFiles.length)];
+
+            // Show scanning animation
+            scanningAnimation.style.display = 'block';
+            scanResults.style.display = 'none';
+
+            // Update file info
+            fileName.textContent = file.name;
+            fileType.textContent = file.type;
+            fileSize.textContent = file.size;
+
+            // Simulate scanning process
+            setTimeout(() => {
+                scanningAnimation.style.display = 'none';
+                scanResults.style.display = 'block';
+
+                // Update threat level and status
+                threatLevel.textContent = file.threat.toUpperCase();
+                scanStatus.textContent = 'Completed';
+
+                // Update threat indicator
+                const threatIndicator = document.querySelector('#threatLevel').previousElementSibling;
+                threatIndicator.className = 'threat-indicator threat-' + file.threat;
+
+                // Add to defense terminal
+                const defenseTerminal = document.getElementById('defenseTerminal');
+                defenseTerminal.innerHTML += `[+] File scan completed: ${file.name} (${file.threat.toUpperCase()})<br>`;
+                defenseTerminal.scrollTop = defenseTerminal.scrollHeight;
+            }, 3000);
+        }
+
+        // Initialize
+        createMatrixRain();
+        setInterval(updateTerminals, 2000);
+        setInterval(createMatrixRain, 5000);
+    </script>
+</body>
+
+</html>
